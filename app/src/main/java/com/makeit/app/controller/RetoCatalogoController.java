@@ -1,12 +1,12 @@
 package com.makeit.app.controller;
 
+import com.makeit.app.dto.reto.CreateRetoRequest;
 import com.makeit.app.model.RetoCatalogo;
 import com.makeit.app.service.RetoCatalogoService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -34,5 +34,11 @@ public class RetoCatalogoController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(reto);
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public RetoCatalogo crearReto(@Valid @RequestBody CreateRetoRequest request) {
+        return retoCatalogoService.crearReto(request);
     }
 }
