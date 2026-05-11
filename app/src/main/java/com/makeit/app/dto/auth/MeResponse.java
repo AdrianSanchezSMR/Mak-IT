@@ -8,12 +8,14 @@ public class MeResponse {
     private String username;
     private String email;
     private LocalTime horaAviso;
+    private String role;
 
-    public MeResponse(Long id, String username, String email, LocalTime horaAviso) {
+    public MeResponse(Long id, String username, String email, LocalTime horaAviso, String role) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.horaAviso = horaAviso;
+        this.role = role;
     }
 
     public Long getId() {
@@ -46,5 +48,13 @@ public class MeResponse {
 
     public void setHoraAviso(LocalTime horaAviso) {
         this.horaAviso = horaAviso;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

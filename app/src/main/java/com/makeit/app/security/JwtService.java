@@ -13,6 +13,7 @@ import java.util.Date;
 
 @Service
 public class JwtService {
+    private static final String ROLE_CLAIM = "role";
 
     @Value("${security.jwt.secret}")
     private String jwtSecret;
@@ -20,12 +21,13 @@ public class JwtService {
     @Value("${security.jwt.expiration-ms}")
     private long expirationMs;
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         Instant now = Instant.now();
         Instant expiration = now.plusMillis(expirationMs);
 
         return Jwts.builder()
                 .subject(username)
+                .claim(ROLE_CLAIM, role)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiration))
                 .signWith(getSigningKey())
@@ -43,6 +45,14 @@ public class JwtService {
         } catch (Exception ex) {
             return false;
         }
+    }
+
+    public String extractRole(String token) {
+        Object claim = extractAllClaims(token).get(ROLE_CLAIM);
+        if (claim == null) {
+            return "USER";
+        }
+        return String.valueOf(claim);
     }
 
     private Claims extractAllClaims(String token) {

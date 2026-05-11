@@ -4,6 +4,7 @@ import com.makeit.app.dto.auth.AuthResponse;
 import com.makeit.app.dto.auth.LoginRequest;
 import com.makeit.app.dto.auth.MeResponse;
 import com.makeit.app.dto.auth.RegisterRequest;
+import com.makeit.app.model.Rol;
 import com.makeit.app.model.Usuario;
 import com.makeit.app.repository.UsuarioRepository;
 import com.makeit.app.security.JwtService;
@@ -42,12 +43,13 @@ public class AuthService {
         usuario.setUsername(request.getUsername());
         usuario.setEmail(request.getEmail());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        usuario.setRole(Rol.USER);
         usuario.setHoraAviso(request.getHoraAviso());
 
         usuarioRepository.save(usuario);
 
-        String token = jwtService.generateToken(usuario.getUsername());
-        return new AuthResponse(token, usuario.getUsername());
+        String token = jwtService.generateToken(usuario.getUsername(), usuario.getRole().name());
+        return new AuthResponse(token, usuario.getUsername(), usuario.getRole().name());
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -59,8 +61,8 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas");
         }
 
-        String token = jwtService.generateToken(usuario.getUsername());
-        return new AuthResponse(token, usuario.getUsername());
+        String token = jwtService.generateToken(usuario.getUsername(), usuario.getRole().name());
+        return new AuthResponse(token, usuario.getUsername(), usuario.getRole().name());
     }
 
     public MeResponse me(String username) {
@@ -71,7 +73,8 @@ public class AuthService {
                 usuario.getId(),
                 usuario.getUsername(),
                 usuario.getEmail(),
-                usuario.getHoraAviso()
+                usuario.getHoraAviso(),
+                usuario.getRole().name()
         );
     }
 }

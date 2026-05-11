@@ -24,6 +24,10 @@ public class Usuario {
     @Column(nullable = false, length = 255)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Rol role;
+
     @Column(name = "hora_aviso")
     private LocalTime horaAviso;
 
@@ -42,6 +46,9 @@ public class Usuario {
     public void prePersist() {
         if (fechaRegistro == null) {
             fechaRegistro = LocalDateTime.now();
+        }
+        if (role == null) {
+            role = Rol.USER;
         }
     }
 
@@ -75,6 +82,14 @@ public class Usuario {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Rol getRole() {
+        return role;
+    }
+
+    public void setRole(Rol role) {
+        this.role = role;
     }
 
     public LocalTime getHoraAviso() {
