@@ -1,0 +1,18 @@
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+**/build/
+**/captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+.kotlin/
+
+# Logos generados en build (fuente: carpeta TFG del Escritorio)
+app/src/main/res/drawable-nodpi/makit_logo.png
+app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+git_result.txt
