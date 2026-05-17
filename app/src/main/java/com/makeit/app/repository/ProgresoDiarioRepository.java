@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface ProgresoDiarioRepository extends JpaRepository<ProgresoDiario, Long> {
     Optional<ProgresoDiario> findByUsuarioAndFecha(Usuario usuario, LocalDate fecha);
+    List<ProgresoDiario> findByUsuarioAndFechaOrderByIdAsc(Usuario usuario, LocalDate fecha);
     Optional<ProgresoDiario> findByUsuarioAndRetoCatalogoIdAndFecha(Usuario usuario, Long retoId, LocalDate fecha);
     List<ProgresoDiario> findByUsuarioOrderByFechaAsc(Usuario usuario);
     long countByUsuarioAndCompletadoTrue(Usuario usuario);

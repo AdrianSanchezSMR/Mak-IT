@@ -6,6 +6,8 @@ import com.makeit.app.service.ChallengeService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/challenges")
 public class ChallengeController {
@@ -19,6 +21,11 @@ public class ChallengeController {
     @GetMapping("/today")
     public ChallengeResponse getTodayChallenge(@AuthenticationPrincipal String username) {
         return challengeService.getTodayChallenge(username);
+    }
+
+    @GetMapping("/today/all")
+    public List<ChallengeResponse> getTodayChallenges(@AuthenticationPrincipal String username) {
+        return challengeService.getTodayChallenges(username);
     }
 
     @PutMapping("/{id}/checkin")

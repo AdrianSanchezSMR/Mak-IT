@@ -4,8 +4,10 @@ import com.makeit.app.dto.auth.AuthResponse;
 import com.makeit.app.dto.auth.LoginRequest;
 import com.makeit.app.dto.auth.MeResponse;
 import com.makeit.app.dto.auth.RegisterRequest;
+import com.makeit.app.model.Categoria;
 import com.makeit.app.model.Rol;
 import com.makeit.app.model.Usuario;
+import com.makeit.app.repository.CategoriaRepository;
 import com.makeit.app.repository.UsuarioRepository;
 import com.makeit.app.security.JwtService;
 import org.springframework.http.HttpStatus;
@@ -13,19 +15,25 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashSet;
+import java.util.List;
+
 @Service
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
+    private final CategoriaRepository categoriaRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     public AuthService(
             UsuarioRepository usuarioRepository,
+            CategoriaRepository categoriaRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService
     ) {
         this.usuarioRepository = usuarioRepository;
+        this.categoriaRepository = categoriaRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -45,6 +53,8 @@ public class AuthService {
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         usuario.setRole(Rol.USER);
         usuario.setHoraAviso(request.getHoraAviso());
+        List<Categoria> categoriasIniciales = categoriaRepository.findAll();
+        usuario.setCategoriasPreferidas(new HashSet<>(categoriasIniciales));
 
         usuarioRepository.save(usuario);
 

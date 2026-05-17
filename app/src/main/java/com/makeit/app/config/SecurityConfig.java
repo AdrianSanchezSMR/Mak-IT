@@ -29,8 +29,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/health", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/retos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/health", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/retos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/retos/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
@@ -45,3 +46,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+

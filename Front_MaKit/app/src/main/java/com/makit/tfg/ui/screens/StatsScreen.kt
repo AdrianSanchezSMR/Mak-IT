@@ -28,10 +28,11 @@ import com.makit.tfg.ui.theme.MakOnSurfaceMuted
 
 @Composable
 fun StatsScreen(
-    profile: UserProfile,
-    weeklyProgress: Float = 0.7f,
+    profile: UserProfile?,
+    weeklyProgress: Float = 0f,
     modifier: Modifier = Modifier
 ) {
+    val user = profile ?: return
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -52,12 +53,12 @@ fun StatsScreen(
             )
             StatOverviewCard(
                 title = "Retos completados",
-                value = profile.completedCount.toString(),
+                value = user.completedCount.toString(),
                 subtitle = "Total histórico"
             )
             StatOverviewCard(
                 title = "Racha actual",
-                value = "${profile.streakDays} días",
+                value = "${user.streakDays} días",
                 subtitle = "¡Sigue así!"
             )
             Surface(

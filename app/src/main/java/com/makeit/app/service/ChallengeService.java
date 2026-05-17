@@ -41,6 +41,17 @@ public class ChallengeService {
         this.progresoDiarioRepository = progresoDiarioRepository;
     }
 
+    @Transactional(readOnly = true)
+    public InterestsResponse getInterests(String username) {
+        Usuario usuario = getUsuarioByUsername(username);
+        List<Long> idsOrdenados = usuario.getCategoriasPreferidas()
+                .stream()
+                .map(Categoria::getId)
+                .sorted()
+                .toList();
+        return new InterestsResponse(idsOrdenados);
+    }
+
     @Transactional
     public InterestsResponse updateInterests(String username, UpdateInterestsRequest request) {
         Usuario usuario = getUsuarioByUsername(username);
@@ -71,9 +82,10 @@ public class ChallengeService {
         Usuario usuario = getUsuarioByUsername(username);
         LocalDate hoy = LocalDate.now();
 
-        Optional<ProgresoDiario> progresoHoy = progresoDiarioRepository.findByUsuarioAndFecha(usuario, hoy);
-        if (progresoHoy.isPresent()) {
-            return toChallengeResponse(progresoHoy.get().getRetoCatalogo(), Boolean.TRUE.equals(progresoHoy.get().getCompletado()));
+        List<ProgresoDiario> progresosHoy = progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, hoy);
+        if (!progresosHoy.isEmpty()) {
+            ProgresoDiario progreso = progresosHoy.get(0);
+            return toChallengeResponse(progreso.getRetoCatalogo(), Boolean.TRUE.equals(progreso.getCompletado()));
         }
 
         List<Long> categoriasPreferidasIds = usuario.getCategoriasPreferidas()
@@ -99,6 +111,21 @@ public class ChallengeService {
         progresoDiarioRepository.save(progreso);
 
         return toChallengeResponse(retoSeleccionado, false);
+    }
+
+    @Transactional
+    public List<ChallengeResponse> getTodayChallenges(String username) {
+        getTodayChallenge(username);
+        Usuario usuario = getUsuarioByUsername(username);
+        LocalDate hoy = LocalDate.now();
+
+        return progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, hoy)
+                .stream()
+                .map(progreso -> toChallengeResponse(
+                        progreso.getRetoCatalogo(),
+                        Boolean.TRUE.equals(progreso.getCompletado())
+                ))
+                .toList();
     }
 
     @Transactional

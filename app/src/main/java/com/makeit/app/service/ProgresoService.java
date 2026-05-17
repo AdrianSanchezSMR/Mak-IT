@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ProgresoService {
@@ -35,8 +37,18 @@ public class ProgresoService {
         long totalPendientes = totalAsignados - totalCompletados;
         double tasa = totalAsignados == 0 ? 0.0 : (totalCompletados * 100.0) / totalAsignados;
 
-        List<DailyProgressPoint> serie = historial.stream()
-                .map(item -> new DailyProgressPoint(item.getFecha(), Boolean.TRUE.equals(item.getCompletado())))
+        Map<java.time.LocalDate, Boolean> completadoPorFecha = historial.stream()
+                .collect(Collectors.groupingBy(
+                        ProgresoDiario::getFecha,
+                        java.util.TreeMap::new,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                items -> items.stream().anyMatch(item -> Boolean.TRUE.equals(item.getCompletado()))
+                        )
+                ));
+
+        List<DailyProgressPoint> serie = completadoPorFecha.entrySet().stream()
+                .map(item -> new DailyProgressPoint(item.getKey(), item.getValue()))
                 .toList();
 
         return new ProgressSummaryResponse(totalAsignados, totalCompletados, totalPendientes, tasa, serie);

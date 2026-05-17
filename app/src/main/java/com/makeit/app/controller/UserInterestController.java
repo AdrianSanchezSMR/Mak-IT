@@ -17,6 +17,11 @@ public class UserInterestController {
         this.challengeService = challengeService;
     }
 
+    @GetMapping("/interests")
+    public InterestsResponse getInterests(@AuthenticationPrincipal String username) {
+        return challengeService.getInterests(username);
+    }
+
     @PutMapping("/interests")
     public InterestsResponse updateInterests(
             @AuthenticationPrincipal String username,

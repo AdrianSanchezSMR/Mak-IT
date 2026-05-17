@@ -1,6 +1,8 @@
 package com.makit.tfg.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,13 +16,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,12 +45,22 @@ import com.makit.tfg.ui.theme.MakOnSurfaceMuted
 
 @Composable
 fun DashboardScreen(
-    profile: UserProfile,
-    todayChallenge: Challenge?,
-    onCompleteCheckIn: () -> Unit,
+    profile: UserProfile?,
+    todayChallenges: List<Challenge>,
+    isLoading: Boolean,
+    onCompleteCheckIn: (Challenge) -> Unit,
     onViewAllChallenges: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val user = profile ?: return
+    val hasChallenges = todayChallenges.isNotEmpty()
+    var selectedChallengeId by remember(todayChallenges) {
+        mutableStateOf(todayChallenges.firstOrNull { !it.isCompletedToday }?.id)
+    }
+    val selectedChallenge = todayChallenges.firstOrNull {
+        it.id == selectedChallengeId && !it.isCompletedToday
+    } ?: todayChallenges.firstOrNull { !it.isCompletedToday }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -64,13 +79,13 @@ fun DashboardScreen(
                 color = MakOnSurfaceMuted
             )
             Text(
-                text = profile.name,
+                text = user.name,
                 style = MaterialTheme.typography.headlineMedium,
                 color = MakGreenDark,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(12.dp))
-            StreakBadge(days = profile.streakDays)
+            StreakBadge(days = user.streakDays)
             Spacer(modifier = Modifier.height(28.dp))
 
             Text(
@@ -81,12 +96,38 @@ fun DashboardScreen(
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            todayChallenge?.let { challenge ->
-                TodayChallengeCard(challenge = challenge)
+            if (!hasChallenges && !isLoading) {
+                Text(
+                    text = "No hay reto asignado hoy. Configura tus intereses o pide al admin que anada retos.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MakOnSurfaceMuted
+                )
+            }
+
+            todayChallenges.forEach { challenge ->
+                TodayChallengeCard(
+                    challenge = challenge,
+                    isSelected = challenge.id == selectedChallenge?.id,
+                    onClick = {
+                        if (!challenge.isCompletedToday) {
+                            selectedChallengeId = challenge.id
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-            PrimaryButton(text = "Check-in completado", onClick = onCompleteCheckIn)
+            val completed = hasChallenges && selectedChallenge == null
+            PrimaryButton(
+                text = when {
+                    completed -> "Check-ins ya completados"
+                    isLoading -> "Cargando..."
+                    else -> "Check-in completado"
+                },
+                onClick = { selectedChallenge?.let(onCompleteCheckIn) },
+                enabled = !isLoading && selectedChallenge != null
+            )
             Spacer(modifier = Modifier.height(12.dp))
             TextButton(
                 onClick = onViewAllChallenges,
@@ -104,12 +145,30 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun TodayChallengeCard(challenge: Challenge) {
+private fun TodayChallengeCard(
+    challenge: Challenge,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val borderColor = when {
+        challenge.isCompletedToday -> MakGreen.copy(alpha = 0.35f)
+        isSelected -> MakGreen
+        else -> MakMint
+    }
+    val statusText = when {
+        challenge.isCompletedToday -> "Completado hoy"
+        isSelected -> "Seleccionado"
+        else -> "Pendiente"
+    }
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .border(2.dp, borderColor, RoundedCornerShape(20.dp))
+            .clickable(enabled = !challenge.isCompletedToday, onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         color = MakMintSoft,
-        shadowElevation = 2.dp,
+        shadowElevation = if (isSelected) 5.dp else 2.dp,
         tonalElevation = 1.dp
     ) {
         Column(
@@ -127,7 +186,7 @@ private fun TodayChallengeCard(challenge: Challenge) {
                     color = MakMint
                 ) {
                     Text(
-                        text = challenge.category.label,
+                        text = challenge.categoryName,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelMedium,
                         color = MakGreenDark
@@ -135,10 +194,10 @@ private fun TodayChallengeCard(challenge: Challenge) {
                 }
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = MakGreen.copy(alpha = 0.12f)
+                    color = if (isSelected) MakGreen.copy(alpha = 0.16f) else MakGreen.copy(alpha = 0.10f)
                 ) {
                     Text(
-                        text = "Sorteado hoy",
+                        text = statusText,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelMedium,
                         color = MakGreen
@@ -158,34 +217,20 @@ private fun TodayChallengeCard(challenge: Challenge) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MakOnSurfaceMuted
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Schedule,
-                        contentDescription = null,
-                        tint = MakGreenLight,
-                        modifier = Modifier.height(18.dp)
-                    )
-                    Spacer(modifier = Modifier.padding(4.dp))
-                    Text(
-                        text = "${challenge.durationMinutes} min",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MakGreenDark
-                    )
-                }
+            if (challenge.isCompletedToday) {
+                Spacer(modifier = Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = MakGreenLight,
+                        tint = MakGreen,
                         modifier = Modifier.height(18.dp)
                     )
                     Spacer(modifier = Modifier.padding(4.dp))
                     Text(
-                        text = "Dificultad ${challenge.difficulty.label.lowercase()}",
+                        text = "Completado hoy",
                         style = MaterialTheme.typography.labelLarge,
-                        color = MakGreenDark
+                        color = MakGreen
                     )
                 }
             }

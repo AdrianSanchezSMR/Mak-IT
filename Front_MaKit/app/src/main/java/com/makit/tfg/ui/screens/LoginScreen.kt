@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -23,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -34,19 +36,18 @@ import com.makit.tfg.ui.components.SectionDivider
 import com.makit.tfg.ui.theme.MakCardBorder
 import com.makit.tfg.ui.theme.MakGreen
 import com.makit.tfg.ui.theme.MakGreenDark
-import androidx.compose.ui.text.font.FontWeight
 import com.makit.tfg.ui.theme.MakGreenLight
 import com.makit.tfg.ui.theme.MakMintSoft
 import com.makit.tfg.ui.theme.MakOnSurfaceMuted
 
 @Composable
 fun LoginScreen(
-    onLogin: (email: String, password: String) -> Unit,
+    isLoading: Boolean,
+    onLogin: (username: String, password: String) -> Unit,
     onCreateAccount: () -> Unit,
-    onForgotPassword: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var email by rememberSaveable { mutableStateOf("tu@email.com") }
+    var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
 
     Column(
@@ -76,12 +77,11 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(48.dp))
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Usuario") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             colors = fieldColors()
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -98,26 +98,20 @@ fun LoginScreen(
         )
         Spacer(modifier = Modifier.height(28.dp))
 
-        PrimaryButton(
-            text = "Entrar",
-            onClick = { onLogin(email, password) },
-            enabled = email.isNotBlank()
-        )
+        if (isLoading) {
+            CircularProgressIndicator(color = MakGreen)
+        } else {
+            PrimaryButton(
+                text = "Entrar",
+                onClick = { onLogin(username, password) },
+                enabled = username.isNotBlank() && password.isNotBlank()
+            )
+        }
         Spacer(modifier = Modifier.height(24.dp))
         SectionDivider()
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlineButton(text = "Crear cuenta nueva", onClick = onCreateAccount)
-        Spacer(modifier = Modifier.height(20.dp))
-
-        TextButton(onClick = onForgotPassword) {
-            Text(
-                text = "¿Olvidaste la contraseña? Recupérala",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MakGreenLight,
-                textAlign = TextAlign.Center
-            )
-        }
     }
 }
 

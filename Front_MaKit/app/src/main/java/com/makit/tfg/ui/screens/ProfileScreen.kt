@@ -17,12 +17,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,12 +46,19 @@ import com.makit.tfg.ui.theme.MakOnSurfaceMuted
 
 @Composable
 fun ProfileScreen(
-    profile: UserProfile,
+    profile: UserProfile?,
     challenges: List<Challenge>,
     onViewAllChallenges: () -> Unit,
+    onEditInterests: () -> Unit,
     onChangeReminder: () -> Unit,
+    onLogout: () -> Unit,
+    onCreateReto: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val user = profile ?: return
+    var showAllChallenges by remember { mutableStateOf(false) }
+    val activeChallenges = challenges.filter { it.isActive }
+    val visibleChallenges = if (showAllChallenges) activeChallenges else activeChallenges.take(2)
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -71,7 +83,7 @@ fun ProfileScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = profile.initials,
+                        text = user.initials,
                         style = MaterialTheme.typography.titleLarge,
                         color = MakMintSoft,
                         fontWeight = FontWeight.Bold
@@ -79,13 +91,13 @@ fun ProfileScreen(
                 }
                 Column {
                     Text(
-                        text = profile.name,
+                        text = user.name,
                         style = MaterialTheme.typography.titleLarge,
                         color = MakGreenDark,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = profile.email,
+                        text = user.email,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MakOnSurfaceMuted
                     )
@@ -98,12 +110,12 @@ fun ProfileScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 StatCard(
-                    value = profile.streakDays.toString(),
+                    value = user.streakDays.toString(),
                     label = "Racha actual",
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
-                    value = profile.completedCount.toString(),
+                    value = user.completedCount.toString(),
                     label = "Completados",
                     modifier = Modifier.weight(1f)
                 )
@@ -111,7 +123,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             Text(
-                text = "Configuración",
+                text = "Configuracion",
                 style = MaterialTheme.typography.titleMedium,
                 color = MakGreenDark,
                 fontWeight = FontWeight.SemiBold
@@ -119,45 +131,49 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
             SettingsRow(
                 title = "Hora de aviso diario",
-                value = profile.dailyReminderHour,
+                value = user.dailyReminderHour,
                 action = "Cambiar",
                 onAction = onChangeReminder
             )
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = "Categorías activas en el sorteo",
+                text = "Categorias activas en el sorteo",
                 style = MaterialTheme.typography.titleMedium,
                 color = MakGreenDark,
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                profile.activeCategories.take(2).forEach { cat ->
-                    CategoryChip(
-                        label = cat.label,
-                        selected = true,
-                        onClick = {},
-                        modifier = Modifier.weight(1f)
-                    )
+            if (user.activeCategoryNames.isEmpty()) {
+                Text(
+                    text = "Sin categorias seleccionadas.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MakOnSurfaceMuted
+                )
+            } else {
+                user.activeCategoryNames.chunked(2).forEach { row ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        row.forEach { name ->
+                            CategoryChip(
+                                label = name,
+                                selected = true,
+                                onClick = {},
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            TextButton(
+                onClick = onEditInterests,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                profile.activeCategories.drop(2).take(2).forEach { cat ->
-                    CategoryChip(
-                        label = cat.label,
-                        selected = true,
-                        onClick = {},
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                Text("Elegir categorias del sorteo", color = MakGreen)
             }
             Spacer(modifier = Modifier.height(28.dp))
 
@@ -172,14 +188,41 @@ fun ProfileScreen(
                     color = MakGreenDark,
                     fontWeight = FontWeight.SemiBold
                 )
-                TextButton(onClick = onViewAllChallenges) {
-                    Text("Ver todos →", color = MakGreenLight)
+                TextButton(
+                    onClick = {
+                        showAllChallenges = !showAllChallenges
+                        onViewAllChallenges()
+                    },
+                    enabled = activeChallenges.size > 2
+                ) {
+                    Text(
+                        if (showAllChallenges) "Ver menos" else "Ver todos",
+                        color = MakGreenLight
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            challenges.filter { it.isActive }.take(2).forEach { challenge ->
+            if (activeChallenges.isEmpty()) {
+                Text(
+                    text = "Todavia no tienes retos activos.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MakOnSurfaceMuted
+                )
+            }
+            visibleChallenges.forEach { challenge ->
                 ChallengeListItem(challenge = challenge)
                 Spacer(modifier = Modifier.height(8.dp))
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(
+                onClick = onCreateReto,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Crear nuevo reto", color = MakGreen)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(onClick = onLogout, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                Text("Cerrar sesion", color = MakGreenLight)
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
@@ -250,10 +293,12 @@ private fun SettingsRow(
 
 @Composable
 private fun ChallengeListItem(challenge: Challenge) {
+    val statusText = if (challenge.isCompletedToday) "completado hoy" else "pendiente"
+    val statusColor = if (challenge.isCompletedToday) MakGreen else MakOnSurfaceMuted
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        color = MakMintSoft,
+        color = if (challenge.isCompletedToday) MakMint else MakMintSoft,
         shadowElevation = 1.dp
     ) {
         Row(
@@ -271,15 +316,19 @@ private fun ChallengeListItem(challenge: Challenge) {
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "${challenge.category.label} · ${challenge.difficulty.label} · activo",
+                    text = "${challenge.categoryName} - $statusText",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MakOnSurfaceMuted
+                    color = statusColor
                 )
             }
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                imageVector = if (challenge.isCompletedToday) {
+                    Icons.Default.CheckCircle
+                } else {
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight
+                },
                 contentDescription = null,
-                tint = MakOnSurfaceMuted
+                tint = statusColor
             )
         }
     }

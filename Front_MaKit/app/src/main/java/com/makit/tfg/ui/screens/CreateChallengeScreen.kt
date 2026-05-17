@@ -18,16 +18,15 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.makit.tfg.data.ChallengeCategory
-import com.makit.tfg.data.Difficulty
+import com.makit.tfg.data.CategoryOption
 import com.makit.tfg.ui.components.CategoryChip
-import com.makit.tfg.ui.components.DifficultyChip
 import com.makit.tfg.ui.components.MakItTopBar
 import com.makit.tfg.ui.components.PrimaryButton
 import com.makit.tfg.ui.theme.MakCardBorder
@@ -38,14 +37,17 @@ import com.makit.tfg.ui.theme.MakMintSoft
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CreateChallengeScreen(
+    categories: List<CategoryOption>,
+    isLoading: Boolean,
     onBack: () -> Unit,
-    onSave: (title: String, description: String, category: ChallengeCategory, difficulty: Difficulty) -> Unit,
+    onSave: (categoriaId: Long, title: String, description: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var title by rememberSaveable { mutableStateOf("Medita 10 minutos...") }
+    var title by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
-    var category by rememberSaveable { mutableStateOf(ChallengeCategory.Mindfulness) }
-    var difficulty by rememberSaveable { mutableStateOf(Difficulty.Media) }
+    var selectedCategoryId by rememberSaveable {
+        mutableLongStateOf(categories.firstOrNull()?.id ?: 0L)
+    }
 
     Column(
         modifier = modifier
@@ -65,6 +67,12 @@ fun CreateChallengeScreen(
                 .padding(horizontal = 20.dp)
         ) {
             Text(
+                text = "El reto se anadira al catalogo y podra aparecer en el sorteo diario.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MakGreenDark
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
                 text = "Nombre del reto",
                 style = MaterialTheme.typography.labelLarge,
                 color = MakGreenDark,
@@ -75,14 +83,14 @@ fun CreateChallengeScreen(
                 value = title,
                 onValueChange = { title = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Medita 10 minutos...") },
+                placeholder = { Text("Ej: Medita 10 minutos") },
                 singleLine = true,
                 colors = fieldColors()
             )
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = "Descripción (opcional)",
+                text = "Descripcion (opcional)",
                 style = MaterialTheme.typography.labelLarge,
                 color = MakGreenDark,
                 fontWeight = FontWeight.SemiBold
@@ -94,13 +102,13 @@ fun CreateChallengeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp),
-                placeholder = { Text("Cuéntate en qué consiste...") },
+                placeholder = { Text("Cuentanos en que consiste...") },
                 colors = fieldColors()
             )
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Categoría",
+                text = "Categoria",
                 style = MaterialTheme.typography.labelLarge,
                 color = MakGreenDark,
                 fontWeight = FontWeight.SemiBold
@@ -110,32 +118,11 @@ fun CreateChallengeScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                ChallengeCategory.entries.forEach { cat ->
+                categories.forEach { cat ->
                     CategoryChip(
-                        label = cat.label,
-                        selected = category == cat,
-                        onClick = { category = cat }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Dificultad",
-                style = MaterialTheme.typography.labelLarge,
-                color = MakGreenDark,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Difficulty.entries.forEach { diff ->
-                    DifficultyChip(
-                        label = diff.label,
-                        selected = difficulty == diff,
-                        onClick = { difficulty = diff }
+                        label = cat.name,
+                        selected = selectedCategoryId == cat.id,
+                        onClick = { selectedCategoryId = cat.id }
                     )
                 }
             }
@@ -143,9 +130,9 @@ fun CreateChallengeScreen(
         }
 
         PrimaryButton(
-            text = "Guardar reto",
-            onClick = { onSave(title, description, category, difficulty) },
-            enabled = title.isNotBlank(),
+            text = if (isLoading) "Guardando..." else "Crear reto",
+            onClick = { onSave(selectedCategoryId, title, description) },
+            enabled = !isLoading && title.isNotBlank() && selectedCategoryId > 0,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
         )
     }
