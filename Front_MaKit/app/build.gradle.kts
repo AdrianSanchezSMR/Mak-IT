@@ -1,10 +1,22 @@
 import java.io.File
+import java.util.Properties
 
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.isFile) {
+        file.inputStream().use(::load)
+    }
+}
+
+val apiBaseUrl = providers.gradleProperty("MAKIT_API_BASE_URL")
+    .orElse(providers.environmentVariable("MAKIT_API_BASE_URL"))
+    .orElse(localProperties.getProperty("MAKIT_API_BASE_URL") ?: "http://10.0.2.2:8080/")
 
 android {
     namespace = "com.makit.tfg"
@@ -16,8 +28,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-        // Emulador Android → localhost del PC. En dispositivo físico usa la IP de tu PC.
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+        // Emulador Android -> localhost del PC. En despliegue define MAKIT_API_BASE_URL.
+        buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
     }
 
     buildTypes {

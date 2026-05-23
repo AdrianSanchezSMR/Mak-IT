@@ -1,2 +1,6 @@
 ## Copia este archivo como local.properties y define tu SDK de Android:
 # sdk.dir=C\:\\Users\\TU_USUARIO\\AppData\\Local\\Android\\Sdk
+
+## URL publica del backend desplegado. Debe terminar en /
+## Si no se define, debug usa el emulador Android contra el backend local.
+# MAKIT_API_BASE_URL=https://tu-backend.com/
