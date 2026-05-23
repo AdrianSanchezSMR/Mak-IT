@@ -28,6 +28,11 @@ public class ChallengeController {
         return challengeService.getTodayChallenges(username);
     }
 
+    @GetMapping("/mine")
+    public List<ChallengeResponse> getMyChallenges(@AuthenticationPrincipal String username) {
+        return challengeService.getMyChallenges(username);
+    }
+
     @PutMapping("/{id}/checkin")
     public CheckInResponse checkIn(@AuthenticationPrincipal String username, @PathVariable("id") Long challengeId) {
         return challengeService.checkInTodayChallenge(username, challengeId);

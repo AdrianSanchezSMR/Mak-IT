@@ -57,8 +57,8 @@ fun ProfileScreen(
 ) {
     val user = profile ?: return
     var showAllChallenges by remember { mutableStateOf(false) }
-    val activeChallenges = challenges.filter { it.isActive }
-    val visibleChallenges = if (showAllChallenges) activeChallenges else activeChallenges.take(2)
+    val profileChallenges = challenges.filter { it.isActive }
+    val visibleChallenges = if (showAllChallenges) profileChallenges else profileChallenges.take(4)
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -193,7 +193,7 @@ fun ProfileScreen(
                         showAllChallenges = !showAllChallenges
                         onViewAllChallenges()
                     },
-                    enabled = activeChallenges.size > 2
+                    enabled = profileChallenges.size > 4
                 ) {
                     Text(
                         if (showAllChallenges) "Ver menos" else "Ver todos",
@@ -202,9 +202,9 @@ fun ProfileScreen(
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            if (activeChallenges.isEmpty()) {
+            if (profileChallenges.isEmpty()) {
                 Text(
-                    text = "Todavia no tienes retos activos.",
+                    text = "Todavia no tienes retos asignados.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MakOnSurfaceMuted
                 )
@@ -291,9 +291,25 @@ private fun SettingsRow(
     }
 }
 
+private fun formatAssignedDate(raw: String?): String? {
+    if (raw.isNullOrBlank() || raw.length < 10) return null
+    val parts = raw.substring(0, 10).split("-")
+    if (parts.size != 3) return null
+    return "${parts[2]}/${parts[1]}/${parts[0]}"
+}
+
 @Composable
 private fun ChallengeListItem(challenge: Challenge) {
-    val statusText = if (challenge.isCompletedToday) "completado hoy" else "pendiente"
+    val statusText = when {
+        challenge.isCompletedToday -> {
+            val date = formatAssignedDate(challenge.assignedDate)
+            if (date != null) "Completado · $date" else "Completado"
+        }
+        else -> {
+            val date = formatAssignedDate(challenge.assignedDate)
+            if (date != null) "Pendiente · $date" else "Pendiente"
+        }
+    }
     val statusColor = if (challenge.isCompletedToday) MakGreen else MakOnSurfaceMuted
     Surface(
         modifier = Modifier.fillMaxWidth(),

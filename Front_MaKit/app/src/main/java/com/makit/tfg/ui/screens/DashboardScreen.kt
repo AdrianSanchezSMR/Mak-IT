@@ -98,7 +98,7 @@ fun DashboardScreen(
 
             if (!hasChallenges && !isLoading) {
                 Text(
-                    text = "No hay reto asignado hoy. Configura tus intereses o pide al admin que anada retos.",
+                    text = "No tienes retos pendientes hoy. Los que ya completaste estan en Perfil.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MakOnSurfaceMuted
                 )
@@ -118,12 +118,11 @@ fun DashboardScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-            val completed = hasChallenges && selectedChallenge == null
             PrimaryButton(
                 text = when {
-                    completed -> "Check-ins ya completados"
                     isLoading -> "Cargando..."
-                    else -> "Check-in completado"
+                    selectedChallenge != null -> "Marcar check-in"
+                    else -> "Sin retos pendientes"
                 },
                 onClick = { selectedChallenge?.let(onCompleteCheckIn) },
                 enabled = !isLoading && selectedChallenge != null

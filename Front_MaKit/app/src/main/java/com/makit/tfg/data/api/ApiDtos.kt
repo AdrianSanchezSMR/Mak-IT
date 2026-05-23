@@ -31,7 +31,8 @@ data class ChallengeResponse(
     val descripcion: String?,
     val categoriaId: Long,
     val categoriaNombre: String,
-    val completadoHoy: Boolean
+    val completadoHoy: Boolean,
+    val fecha: String? = null
 )
 
 data class CheckInResponse(

@@ -21,7 +21,8 @@ data class Challenge(
     val categoryName: String,
     val categoryId: Long,
     val isCompletedToday: Boolean = false,
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
+    val assignedDate: String? = null
 )
 
 data class CategoryOption(

@@ -177,7 +177,7 @@ fun MakItNavHost(
             composable(Routes.PROFILE) {
                 ProfileScreen(
                     profile = appState.profile,
-                    challenges = appState.todayChallenges.ifEmpty { appState.catalogChallenges },
+                    challenges = appState.myChallenges.ifEmpty { appState.catalogChallenges },
                     onViewAllChallenges = {},
                     onEditInterests = { navController.navigate(Routes.INTERESTS) },
                     onChangeReminder = {

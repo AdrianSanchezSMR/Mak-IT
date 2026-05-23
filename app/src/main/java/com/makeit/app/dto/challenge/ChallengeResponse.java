@@ -1,5 +1,7 @@
 package com.makeit.app.dto.challenge;
 
+import java.time.LocalDate;
+
 public class ChallengeResponse {
 
     private Long id;
@@ -8,6 +10,7 @@ public class ChallengeResponse {
     private Long categoriaId;
     private String categoriaNombre;
     private boolean completadoHoy;
+    private LocalDate fecha;
 
     public ChallengeResponse(
             Long id,
@@ -15,7 +18,8 @@ public class ChallengeResponse {
             String descripcion,
             Long categoriaId,
             String categoriaNombre,
-            boolean completadoHoy
+            boolean completadoHoy,
+            LocalDate fecha
     ) {
         this.id = id;
         this.titulo = titulo;
@@ -23,6 +27,7 @@ public class ChallengeResponse {
         this.categoriaId = categoriaId;
         this.categoriaNombre = categoriaNombre;
         this.completadoHoy = completadoHoy;
+        this.fecha = fecha;
     }
 
     public Long getId() {
@@ -47,5 +52,9 @@ public class ChallengeResponse {
 
     public boolean isCompletadoHoy() {
         return completadoHoy;
+    }
+
+    public LocalDate getFecha() {
+        return fecha;
     }
 }

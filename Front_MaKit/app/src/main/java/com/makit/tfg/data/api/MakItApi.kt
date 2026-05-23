@@ -29,6 +29,9 @@ interface MakItApi {
     @GET("api/challenges/today/all")
     suspend fun todayChallenges(): List<ChallengeResponse>
 
+    @GET("api/challenges/mine")
+    suspend fun myChallenges(): List<ChallengeResponse>
+
     @PUT("api/challenges/{id}/checkin")
     suspend fun checkIn(@Path("id") challengeId: Long): CheckInResponse
 

@@ -42,6 +42,9 @@ class MakItAppState(
     var todayChallenges by mutableStateOf<List<Challenge>>(emptyList())
         private set
 
+    var myChallenges by mutableStateOf<List<Challenge>>(emptyList())
+        private set
+
     var catalogChallenges by mutableStateOf<List<Challenge>>(emptyList())
         private set
 
@@ -132,6 +135,7 @@ class MakItAppState(
             profile = null
             todayChallenge = null
             todayChallenges = emptyList()
+            myChallenges = emptyList()
             catalogChallenges = emptyList()
             categories = emptyList()
             selectedInterestIds = emptySet()
@@ -161,6 +165,7 @@ class MakItAppState(
         val summary = runCatching { repository.progressSummary() }.getOrNull()
         val retos = runCatching { repository.retos() }.getOrDefault(emptyList())
         val today = repository.todayChallenges()
+        val mine = runCatching { repository.myChallenges() }.getOrDefault(emptyList())
 
         categories = allCategories.map { CategoryOption(it.id, it.nombre) }
         selectedInterestIds = interestIds.toSet()
@@ -194,8 +199,8 @@ class MakItAppState(
             .filter { it.activo && (interestIds.isEmpty() || it.categoria.id in interestIds) }
             .map { it.toChallenge() }
         todayChallenges = today.map { it.toChallenge() }
-        todayChallenge = todayChallenges.firstOrNull { !it.isCompletedToday }
-            ?: todayChallenges.firstOrNull()
+        myChallenges = mine.map { it.toChallenge() }
+        todayChallenge = todayChallenges.firstOrNull()
     }
 
     fun completeCheckIn(challenge: Challenge, onSuccess: () -> Unit) {
@@ -206,9 +211,9 @@ class MakItAppState(
             errorMessage = null
             try {
                 repository.checkIn(challenge.id)
-                todayChallenges = todayChallenges.map {
-                    if (it.id == challenge.id) it.copy(isCompletedToday = true) else it
-                }
+                val completed = challenge.copy(isCompletedToday = true)
+                todayChallenges = todayChallenges.filter { it.id != challenge.id }
+                myChallenges = listOf(completed) + myChallenges.filter { it.id != challenge.id }
                 todayChallenge = todayChallenges.firstOrNull()
                 val summary = repository.progressSummary()
                 val me = repository.profile()
@@ -248,6 +253,7 @@ class MakItAppState(
                 val summary = runCatching { repository.progressSummary() }.getOrNull()
                 val retos = runCatching { repository.retos() }.getOrDefault(emptyList())
                 val today = runCatching { repository.todayChallenges() }.getOrDefault(emptyList())
+                val mine = runCatching { repository.myChallenges() }.getOrDefault(emptyList())
 
                 profile = if (summary != null) {
                     buildProfile(
@@ -271,6 +277,7 @@ class MakItAppState(
                     .filter { it.activo && (saved.isEmpty() || it.categoria.id in saved) }
                     .map { it.toChallenge() }
                 todayChallenges = today.map { it.toChallenge() }
+                myChallenges = mine.map { it.toChallenge() }
                 todayChallenge = todayChallenges.firstOrNull()
                 onSuccess()
             } catch (e: Exception) {
@@ -364,7 +371,8 @@ class MakItAppState(
         categoryName = categoriaNombre,
         categoryId = categoriaId,
         isCompletedToday = completadoHoy,
-        isActive = true
+        isActive = true,
+        assignedDate = fecha
     )
 
     private fun RetoCatalogoDto.toChallenge() = Challenge(

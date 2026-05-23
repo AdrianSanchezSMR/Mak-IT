@@ -33,6 +33,16 @@ public interface ProgresoDiarioRepository extends JpaRepository<ProgresoDiario, 
             ORDER BY p.fecha ASC, p.id ASC
             """)
     List<ProgresoDiario> findByUsuarioAndCompletadoFalseOrderByFechaAscIdAsc(@Param("usuario") Usuario usuario);
+
+    @Query("""
+            SELECT p FROM ProgresoDiario p
+            JOIN FETCH p.retoCatalogo r
+            JOIN FETCH r.categoria
+            WHERE p.usuario = :usuario
+            ORDER BY p.fecha DESC, p.id DESC
+            """)
+    List<ProgresoDiario> findByUsuarioWithRetoOrderByFechaDescIdDesc(@Param("usuario") Usuario usuario);
+
     Optional<ProgresoDiario> findByUsuarioAndRetoCatalogoIdAndFecha(Usuario usuario, Long retoId, LocalDate fecha);
     List<ProgresoDiario> findByUsuarioOrderByFechaAsc(Usuario usuario);
     long countByUsuarioAndCompletadoTrue(Usuario usuario);

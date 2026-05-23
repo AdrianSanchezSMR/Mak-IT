@@ -85,7 +85,7 @@ public class ChallengeService {
         List<ProgresoDiario> progresosHoy = progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, hoy);
         if (!progresosHoy.isEmpty()) {
             ProgresoDiario progreso = progresosHoy.get(0);
-            return toChallengeResponse(progreso.getRetoCatalogo(), Boolean.TRUE.equals(progreso.getCompletado()));
+            return toChallengeResponse(progreso);
         }
 
         List<Long> categoriasPreferidasIds = usuario.getCategoriasPreferidas()
@@ -110,7 +110,7 @@ public class ChallengeService {
         progreso.setCompletado(false);
         progresoDiarioRepository.save(progreso);
 
-        return toChallengeResponse(retoSeleccionado, false);
+        return toChallengeResponse(retoSeleccionado, false, hoy);
     }
 
     @Transactional(readOnly = true)
@@ -118,28 +118,19 @@ public class ChallengeService {
         Usuario usuario = getUsuarioByUsername(username);
         LocalDate hoy = LocalDate.now();
 
-        List<ProgresoDiario> progresosHoy = progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, hoy);
-        if (!progresosHoy.isEmpty()) {
-            return progresosHoy.stream()
-                    .map(progreso -> toChallengeResponse(
-                            progreso.getRetoCatalogo(),
-                            Boolean.TRUE.equals(progreso.getCompletado())
-                    ))
-                    .toList();
-        }
-
-        return List.of();
+        return progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, hoy)
+                .stream()
+                .filter(progreso -> !Boolean.TRUE.equals(progreso.getCompletado()))
+                .map(progreso -> toChallengeResponse(progreso))
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<ChallengeResponse> getActiveChallenges(String username) {
+    public List<ChallengeResponse> getMyChallenges(String username) {
         Usuario usuario = getUsuarioByUsername(username);
-        return progresoDiarioRepository.findByUsuarioAndCompletadoFalseOrderByFechaAscIdAsc(usuario)
+        return progresoDiarioRepository.findByUsuarioWithRetoOrderByFechaDescIdDesc(usuario)
                 .stream()
-                .map(progreso -> toChallengeResponse(
-                        progreso.getRetoCatalogo(),
-                        Boolean.TRUE.equals(progreso.getCompletado())
-                ))
+                .map(this::toChallengeResponse)
                 .toList();
     }
 
@@ -177,14 +168,23 @@ public class ChallengeService {
         return ordenados.get(index);
     }
 
-    private ChallengeResponse toChallengeResponse(RetoCatalogo reto, boolean completadoHoy) {
+    private ChallengeResponse toChallengeResponse(ProgresoDiario progreso) {
+        return toChallengeResponse(
+                progreso.getRetoCatalogo(),
+                Boolean.TRUE.equals(progreso.getCompletado()),
+                progreso.getFecha()
+        );
+    }
+
+    private ChallengeResponse toChallengeResponse(RetoCatalogo reto, boolean completado, LocalDate fecha) {
         return new ChallengeResponse(
                 reto.getId(),
                 reto.getTitulo(),
                 reto.getDescripcion(),
                 reto.getCategoria().getId(),
                 reto.getCategoria().getNombre(),
-                completadoHoy
+                completado,
+                fecha
         );
     }
 }
