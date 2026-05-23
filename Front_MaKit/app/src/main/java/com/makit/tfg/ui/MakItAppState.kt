@@ -145,52 +145,57 @@ class MakItAppState(
             isLoading = true
             errorMessage = null
             try {
-                val me = repository.profile()
-                val interestIds = runCatching { repository.getInterests() }.getOrDefault(emptyList())
-                val allCategories = runCatching { repository.categorias() }.getOrDefault(emptyList())
-                val summary = runCatching { repository.progressSummary() }.getOrNull()
-                val retos = runCatching { repository.retos() }.getOrDefault(emptyList())
-                val today = runCatching { repository.todayChallenges() }.getOrDefault(emptyList())
-
-                categories = allCategories.map { CategoryOption(it.id, it.nombre) }
-                selectedInterestIds = interestIds.toSet()
-                profile = if (summary != null) {
-                    buildProfile(me, interestIds, allCategories.map { it.id to it.nombre }, summary)
-                } else {
-                    profile?.copy(
-                        username = me.username,
-                        email = me.email,
-                        role = me.role,
-                        dailyReminderHour = formatHoraAviso(me.horaAviso),
-                        activeCategoryIds = interestIds.toSet(),
-                        activeCategoryNames = allCategories
-                            .filter { it.id in interestIds }
-                            .map { it.nombre }
-                    ) ?: UserProfile(
-                        username = me.username,
-                        email = me.email,
-                        role = me.role,
-                        streakDays = 0,
-                        completedCount = 0,
-                        dailyReminderHour = formatHoraAviso(me.horaAviso),
-                        activeCategoryIds = interestIds.toSet(),
-                        activeCategoryNames = allCategories
-                            .filter { it.id in interestIds }
-                            .map { it.nombre }
-                    )
-                }
-                weeklyProgress = ((summary?.tasaCompletado ?: 0.0) / 100.0).toFloat().coerceIn(0f, 1f)
-                catalogChallenges = retos
-                    .filter { it.activo && (interestIds.isEmpty() || it.categoria.id in interestIds) }
-                    .map { it.toChallenge() }
-                todayChallenges = today.map { it.toChallenge() }
-                todayChallenge = todayChallenges.firstOrNull()
+                loadDashboardData()
             } catch (e: Exception) {
                 errorMessage = MakItRepository.humanizeError(e)
             } finally {
                 isLoading = false
             }
         }
+    }
+
+    private suspend fun loadDashboardData() {
+        val me = repository.profile()
+        val interestIds = runCatching { repository.getInterests() }.getOrDefault(emptyList())
+        val allCategories = runCatching { repository.categorias() }.getOrDefault(emptyList())
+        val summary = runCatching { repository.progressSummary() }.getOrNull()
+        val retos = runCatching { repository.retos() }.getOrDefault(emptyList())
+        val today = repository.todayChallenges()
+
+        categories = allCategories.map { CategoryOption(it.id, it.nombre) }
+        selectedInterestIds = interestIds.toSet()
+        profile = if (summary != null) {
+            buildProfile(me, interestIds, allCategories.map { it.id to it.nombre }, summary)
+        } else {
+            profile?.copy(
+                username = me.username,
+                email = me.email,
+                role = me.role,
+                dailyReminderHour = formatHoraAviso(me.horaAviso),
+                activeCategoryIds = interestIds.toSet(),
+                activeCategoryNames = allCategories
+                    .filter { it.id in interestIds }
+                    .map { it.nombre }
+            ) ?: UserProfile(
+                username = me.username,
+                email = me.email,
+                role = me.role,
+                streakDays = 0,
+                completedCount = 0,
+                dailyReminderHour = formatHoraAviso(me.horaAviso),
+                activeCategoryIds = interestIds.toSet(),
+                activeCategoryNames = allCategories
+                    .filter { it.id in interestIds }
+                    .map { it.nombre }
+            )
+        }
+        weeklyProgress = ((summary?.tasaCompletado ?: 0.0) / 100.0).toFloat().coerceIn(0f, 1f)
+        catalogChallenges = retos
+            .filter { it.activo && (interestIds.isEmpty() || it.categoria.id in interestIds) }
+            .map { it.toChallenge() }
+        todayChallenges = today.map { it.toChallenge() }
+        todayChallenge = todayChallenges.firstOrNull { !it.isCompletedToday }
+            ?: todayChallenges.firstOrNull()
     }
 
     fun completeCheckIn(challenge: Challenge, onSuccess: () -> Unit) {
@@ -313,7 +318,7 @@ class MakItAppState(
             errorMessage = null
             try {
                 repository.createReto(categoriaId, titulo, descripcion.ifBlank { null })
-                refreshAll()
+                loadDashboardData()
                 onSuccess()
             } catch (e: Exception) {
                 errorMessage = MakItRepository.humanizeError(e)

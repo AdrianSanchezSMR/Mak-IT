@@ -113,13 +113,28 @@ public class ChallengeService {
         return toChallengeResponse(retoSeleccionado, false);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<ChallengeResponse> getTodayChallenges(String username) {
-        getTodayChallenge(username);
         Usuario usuario = getUsuarioByUsername(username);
         LocalDate hoy = LocalDate.now();
 
-        return progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, hoy)
+        List<ProgresoDiario> progresosHoy = progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, hoy);
+        if (!progresosHoy.isEmpty()) {
+            return progresosHoy.stream()
+                    .map(progreso -> toChallengeResponse(
+                            progreso.getRetoCatalogo(),
+                            Boolean.TRUE.equals(progreso.getCompletado())
+                    ))
+                    .toList();
+        }
+
+        return List.of();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChallengeResponse> getActiveChallenges(String username) {
+        Usuario usuario = getUsuarioByUsername(username);
+        return progresoDiarioRepository.findByUsuarioAndCompletadoFalseOrderByFechaAscIdAsc(usuario)
                 .stream()
                 .map(progreso -> toChallengeResponse(
                         progreso.getRetoCatalogo(),
