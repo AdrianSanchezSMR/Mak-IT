@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -80,37 +81,7 @@ public class ChallengeService {
     @Transactional
     public ChallengeResponse getTodayChallenge(String username) {
         Usuario usuario = getUsuarioByUsername(username);
-        LocalDate hoy = LocalDate.now();
-
-        List<ProgresoDiario> progresosHoy = progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, hoy);
-        if (!progresosHoy.isEmpty()) {
-            ProgresoDiario progreso = progresosHoy.get(0);
-            return toChallengeResponse(progreso);
-        }
-
-        List<Long> categoriasPreferidasIds = usuario.getCategoriasPreferidas()
-                .stream()
-                .map(Categoria::getId)
-                .toList();
-
-        List<RetoCatalogo> candidatos = categoriasPreferidasIds.isEmpty()
-                ? retoCatalogoRepository.findByActivoTrue()
-                : retoCatalogoRepository.findByCategoriaIdInAndActivoTrue(categoriasPreferidasIds);
-
-        if (candidatos.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay retos disponibles para hoy");
-        }
-
-        RetoCatalogo retoSeleccionado = selectDeterministicChallenge(candidatos, usuario.getId(), hoy);
-
-        ProgresoDiario progreso = new ProgresoDiario();
-        progreso.setUsuario(usuario);
-        progreso.setRetoCatalogo(retoSeleccionado);
-        progreso.setFecha(hoy);
-        progreso.setCompletado(false);
-        progresoDiarioRepository.save(progreso);
-
-        return toChallengeResponse(retoSeleccionado, false, hoy);
+        return ensureTodayChallenge(usuario);
     }
 
     @Transactional
@@ -141,6 +112,12 @@ public class ChallengeService {
     }
 
     @Transactional
+    public ChallengeResponse assignRandomTodayChallenge(String username) {
+        Usuario usuario = getUsuarioByUsername(username);
+        return assignRandomTodayChallenge(usuario);
+    }
+
+    @Transactional
     public CheckInResponse checkInTodayChallenge(String username, Long challengeId) {
         Usuario usuario = getUsuarioByUsername(username);
         LocalDate hoy = LocalDate.now();
@@ -165,6 +142,73 @@ public class ChallengeService {
     private Usuario getUsuarioByUsername(String username) {
         return usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+    }
+
+    @Transactional
+    public void generateDueChallengeForUser(Usuario usuario, LocalDate fecha) {
+        LocalTime aviso = usuario.getHoraAviso();
+        if (aviso == null) {
+            return;
+        }
+        if (LocalTime.now().isBefore(aviso)) {
+            return;
+        }
+        if (!progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, fecha).isEmpty()) {
+            return;
+        }
+        ensureTodayChallenge(usuario);
+    }
+
+    private ChallengeResponse ensureTodayChallenge(Usuario usuario) {
+        LocalDate hoy = LocalDate.now();
+
+        List<ProgresoDiario> progresosHoy = progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, hoy);
+        if (!progresosHoy.isEmpty()) {
+            return toChallengeResponse(progresosHoy.get(0));
+        }
+
+        return assignRandomTodayChallenge(usuario);
+    }
+
+    private ChallengeResponse assignRandomTodayChallenge(Usuario usuario) {
+        LocalDate hoy = LocalDate.now();
+
+        List<Long> categoriasPreferidasIds = usuario.getCategoriasPreferidas()
+                .stream()
+                .map(Categoria::getId)
+                .toList();
+
+        List<RetoCatalogo> candidatos = categoriasPreferidasIds.isEmpty()
+                ? retoCatalogoRepository.findByActivoTrue()
+                : retoCatalogoRepository.findByCategoriaIdInAndActivoTrue(categoriasPreferidasIds);
+
+        if (candidatos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay retos disponibles para hoy");
+        }
+
+        Set<Long> retosYaAsignadosHoy = progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, hoy)
+                .stream()
+                .map(progreso -> progreso.getRetoCatalogo().getId())
+                .collect(Collectors.toSet());
+
+        List<RetoCatalogo> disponibles = candidatos.stream()
+                .filter(reto -> !retosYaAsignadosHoy.contains(reto.getId()))
+                .toList();
+
+        if (disponibles.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya tienes todos los retos disponibles asignados hoy");
+        }
+
+        RetoCatalogo retoSeleccionado = disponibles.get(new Random().nextInt(disponibles.size()));
+
+        ProgresoDiario progreso = new ProgresoDiario();
+        progreso.setUsuario(usuario);
+        progreso.setRetoCatalogo(retoSeleccionado);
+        progreso.setFecha(hoy);
+        progreso.setCompletado(false);
+        progresoDiarioRepository.save(progreso);
+
+        return toChallengeResponse(progreso);
     }
 
     private RetoCatalogo selectDeterministicChallenge(List<RetoCatalogo> retos, Long userId, LocalDate date) {

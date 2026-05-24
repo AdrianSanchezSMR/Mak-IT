@@ -26,6 +26,9 @@ interface MakItApi {
     @GET("api/challenges/today")
     suspend fun todayChallenge(): ChallengeResponse
 
+    @POST("api/challenges/random")
+    suspend fun randomChallenge(): ChallengeResponse
+
     @GET("api/challenges/today/all")
     suspend fun todayChallenges(): List<ChallengeResponse>
 

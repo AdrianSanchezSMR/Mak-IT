@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -96,6 +99,36 @@ fun MakItNavHost(
         return
     }
 
+    appState.randomChallengeDialogMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { appState.clearRandomChallengeDialog() },
+            title = { Text(text = "Sin retos disponibles") },
+            text = { Text(text = message) },
+            confirmButton = {
+                TextButton(onClick = {
+                    appState.clearRandomChallengeDialog()
+                    navController.navigate(Routes.HOME) {
+                        launchSingleTop = true
+                    }
+                }) {
+                    Text("Cerrar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        appState.clearRandomChallengeDialog()
+                        navController.navigate(Routes.CREATE_CHALLENGE) {
+                            launchSingleTop = true
+                        }
+                    }
+                ) {
+                    Text("Crear uno nuevo")
+                }
+            }
+        )
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -161,6 +194,13 @@ fun MakItNavHost(
                         appState.completeCheckIn(challenge) {
                             scope.launch {
                                 snackbarHostState.showSnackbar("Check-in completado")
+                            }
+                        }
+                    },
+                    onRequestRandomChallenge = {
+                        appState.requestRandomChallenge {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Nuevo reto asignado")
                             }
                         }
                     },

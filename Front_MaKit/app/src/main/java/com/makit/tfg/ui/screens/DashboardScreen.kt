@@ -59,6 +59,7 @@ fun DashboardScreen(
     todayChallenges: List<Challenge>,
     isLoading: Boolean,
     onCompleteCheckIn: (Challenge) -> Unit,
+    onRequestRandomChallenge: () -> Unit,
     onViewAllChallenges: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -145,6 +146,12 @@ fun DashboardScreen(
                 },
                 onClick = { selectedChallenge?.let(onCompleteCheckIn) },
                 enabled = !isLoading && selectedChallenge != null
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            PrimaryButton(
+                text = "Nuevo reto aleatorio",
+                onClick = onRequestRandomChallenge,
+                enabled = !isLoading
             )
             Spacer(modifier = Modifier.height(12.dp))
             TextButton(

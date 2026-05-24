@@ -43,7 +43,11 @@ public class ProgresoService {
                         java.util.TreeMap::new,
                         Collectors.collectingAndThen(
                                 Collectors.toList(),
-                                items -> items.stream().anyMatch(item -> Boolean.TRUE.equals(item.getCompletado()))
+                                items -> {
+                                    boolean anyCompleted = items.stream().anyMatch(item -> Boolean.TRUE.equals(item.getCompletado()));
+                                    boolean isToday = items.stream().anyMatch(item -> item.getFecha().equals(java.time.LocalDate.now()));
+                                    return anyCompleted || isToday;
+                                }
                         )
                 ));
 

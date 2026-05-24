@@ -57,6 +57,9 @@ class MakItAppState(
     var weeklyProgress by mutableStateOf(0f)
         private set
 
+    var randomChallengeDialogMessage by mutableStateOf<String?>(null)
+        private set
+
     val isAdmin: Boolean
         get() = profile?.role == "ADMIN"
 
@@ -74,6 +77,10 @@ class MakItAppState(
 
     fun clearError() {
         errorMessage = null
+    }
+
+    fun clearRandomChallengeDialog() {
+        randomChallengeDialogMessage = null
     }
 
     fun login(username: String, password: String, onSuccess: () -> Unit) {
@@ -240,6 +247,48 @@ class MakItAppState(
     fun completeCheckIn(onSuccess: () -> Unit) {
         val challenge = todayChallenge ?: return
         completeCheckIn(challenge, onSuccess)
+    }
+
+    fun requestRandomChallenge(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            isLoading = true
+            errorMessage = null
+            try {
+                randomChallengeDialogMessage = null
+                val challenge = repository.randomChallenge()
+                todayChallenge = challenge.toChallenge()
+                val refreshedToday = runCatching { repository.todayChallenges() }.getOrDefault(emptyList())
+                todayChallenges = refreshedToday.map { it.toChallenge() }
+                myChallenges = runCatching { repository.myChallenges() }.getOrDefault(emptyList()).map { it.toChallenge() }
+                val summary = runCatching { repository.progressSummary() }.getOrNull()
+                val me = repository.profile()
+                val interestIds = repository.getInterests()
+                profile = if (summary != null) {
+                    buildProfile(
+                        me,
+                        interestIds,
+                        categories.map { it.id to it.name },
+                        summary
+                    )
+                } else {
+                    profile?.copy(
+                        username = me.username,
+                        email = me.email,
+                        role = me.role,
+                        dailyReminderHour = formatHoraAviso(me.horaAviso),
+                        activeCategoryIds = interestIds.toSet(),
+                        activeCategoryNames = categories.filter { it.id in interestIds }.map { it.name }
+                    )
+                }
+                onSuccess()
+            } catch (e: retrofit2.HttpException) {
+                randomChallengeDialogMessage = "No hay más retos disponibles para hoy"
+            } catch (e: Exception) {
+                errorMessage = MakItRepository.humanizeError(e)
+            } finally {
+                isLoading = false
+            }
+        }
     }
 
     fun updateInterests(ids: Set<Long>, onSuccess: () -> Unit) {

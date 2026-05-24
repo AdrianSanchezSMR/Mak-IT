@@ -76,6 +76,8 @@ class MakItRepository(context: Context) {
 
     suspend fun todayChallenge(): ChallengeResponse = ApiClient.api.todayChallenge()
 
+    suspend fun randomChallenge(): ChallengeResponse = ApiClient.api.randomChallenge()
+
     suspend fun todayChallenges(): List<ChallengeResponse> = ApiClient.api.todayChallenges()
 
     suspend fun myChallenges(): List<ChallengeResponse> = ApiClient.api.myChallenges()

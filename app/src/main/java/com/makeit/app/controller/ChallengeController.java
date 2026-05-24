@@ -33,6 +33,11 @@ public class ChallengeController {
         return challengeService.getMyChallenges(username);
     }
 
+    @PostMapping("/random")
+    public ChallengeResponse assignRandomChallenge(@AuthenticationPrincipal String username) {
+        return challengeService.assignRandomTodayChallenge(username);
+    }
+
     @PutMapping("/{id}/checkin")
     public CheckInResponse checkIn(@AuthenticationPrincipal String username, @PathVariable("id") Long challengeId) {
         return challengeService.checkInTodayChallenge(username, challengeId);
