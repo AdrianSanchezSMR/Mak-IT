@@ -174,15 +174,24 @@ fun MakItNavHost(
             composable(Routes.STATS) {
                 StatsScreen(
                     profile = appState.profile,
-                    weeklyProgress = appState.weeklyProgress
+                    weeklyProgress = appState.weeklyProgress,
+                    activeTasksCount = appState.todayChallenges.count { !it.isCompletedToday }
                 )
             }
             composable(Routes.PROFILE) {
                 ProfileScreen(
                     profile = appState.profile,
+                    categories = appState.categories,
+                    selectedInterestIds = appState.selectedInterestIds,
                     challenges = appState.myChallenges.ifEmpty { appState.catalogChallenges },
-                    onViewAllChallenges = {},
-                    onEditInterests = { navController.navigate(Routes.INTERESTS) },
+                    onToggleInterest = { id, enabled ->
+                        val updated = if (enabled) appState.selectedInterestIds + id else appState.selectedInterestIds - id
+                        appState.updateInterests(updated) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Preferencias guardadas")
+                            }
+                        }
+                    },
                     onChangeReminder = {
                         val cal = Calendar.getInstance()
                         TimePickerDialog(

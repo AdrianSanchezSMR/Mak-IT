@@ -1,6 +1,5 @@
 package com.makit.tfg.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,12 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.makit.tfg.R
+import coil.compose.AsyncImage
 import com.makit.tfg.ui.theme.MakCardBorder
 import com.makit.tfg.ui.theme.MakGreen
 import com.makit.tfg.ui.theme.MakGreenDark
@@ -54,6 +51,8 @@ enum class BottomNavItem(val label: String, val icon: ImageVector) {
     Perfil("Perfil", Icons.Default.Person)
 }
 
+private const val MAKIT_LOGO_URL = "https://makit-assets-tfc.s3.us-east-1.amazonaws.com/makit_logo.png"
+
 @Composable
 fun MakItLogo(
     modifier: Modifier = Modifier,
@@ -68,13 +67,12 @@ fun MakItLogo(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Image(
-            painter = painterResource(R.drawable.makit_logo),
+        AsyncImage(
+            model = MAKIT_LOGO_URL,
             contentDescription = "Logo Mak-IT",
             modifier = Modifier
                 .size(boxSize)
                 .clip(RoundedCornerShape(corner)),
-            contentScale = ContentScale.Fit
         )
         if (showWordmark) {
             Text(
