@@ -1,5 +1,6 @@
 package com.makit.tfg.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -27,6 +28,7 @@ import com.makit.tfg.ui.components.CategoryChip
 import com.makit.tfg.ui.components.MakItTopBar
 import com.makit.tfg.ui.components.PrimaryButton
 import com.makit.tfg.ui.theme.MakGreenDark
+import com.makit.tfg.ui.theme.MakSurface
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -43,6 +45,7 @@ fun InterestsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(MakSurface)
             .imePadding()
     ) {
         MakItTopBar(

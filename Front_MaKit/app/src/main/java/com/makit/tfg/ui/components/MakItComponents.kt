@@ -45,6 +45,7 @@ import com.makit.tfg.ui.theme.MakGreenLight
 import com.makit.tfg.ui.theme.MakMint
 import com.makit.tfg.ui.theme.MakMintSoft
 import com.makit.tfg.ui.theme.MakOnSurfaceMuted
+import com.makit.tfg.ui.theme.MakSurface
 import com.makit.tfg.ui.theme.MakStreak
 
 enum class BottomNavItem(val label: String, val icon: ImageVector) {
@@ -97,6 +98,7 @@ fun MakItTopBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .background(MakSurface)
             .padding(horizontal = 20.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -134,7 +136,7 @@ fun MakItBottomBar(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shadowElevation = 12.dp,
-        color = MakMintSoft
+        color = MakSurface
     ) {
         Row(
             modifier = Modifier
@@ -148,9 +150,10 @@ fun MakItBottomBar(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(if (selectedItem) MakMint else MakSurface)
                         .clickable { onItemSelected(item) }
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
@@ -205,7 +208,7 @@ fun StreakBadge(days: Int, modifier: Modifier = Modifier) {
                 modifier = Modifier.size(18.dp)
             )
             Text(
-                text = "$days días de racha",
+                text = "$days dias de racha",
                 style = MaterialTheme.typography.labelLarge,
                 color = MakGreenDark
             )
@@ -220,9 +223,9 @@ fun CategoryChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val background = if (selected) MakGreen else MakMintSoft
+    val background = if (selected) MakGreen else MakSurface
     val borderColor = if (selected) MakGreen else MakCardBorder
-    val textColor = if (selected) MakMintSoft else MakGreenDark
+    val textColor = if (selected) MakSurface else MakGreenDark
 
     Surface(
         modifier = modifier
@@ -298,7 +301,7 @@ fun PrimaryButton(
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
-                color = MakMintSoft,
+                color = MakSurface,
                 fontWeight = FontWeight.SemiBold
             )
         }
@@ -318,7 +321,7 @@ fun OutlineButton(
             .clip(RoundedCornerShape(14.dp))
             .border(1.5.dp, MakGreenLight, RoundedCornerShape(14.dp))
             .clickable(onClick = onClick),
-        color = MakMintSoft,
+        color = MakSurface,
         shape = RoundedCornerShape(14.dp)
     ) {
         Box(contentAlignment = Alignment.Center) {

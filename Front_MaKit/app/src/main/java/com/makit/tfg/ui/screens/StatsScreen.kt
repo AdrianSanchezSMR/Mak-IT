@@ -1,6 +1,7 @@
 package com.makit.tfg.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,9 +23,11 @@ import com.makit.tfg.ui.components.MakItTopBar
 import com.makit.tfg.ui.theme.MakGreen
 import com.makit.tfg.ui.theme.MakGreenDark
 import com.makit.tfg.ui.theme.MakGreenLight
+import com.makit.tfg.ui.theme.MakCardBorder
 import com.makit.tfg.ui.theme.MakMint
 import com.makit.tfg.ui.theme.MakMintSoft
 import com.makit.tfg.ui.theme.MakOnSurfaceMuted
+import com.makit.tfg.ui.theme.MakSurface
 
 @Composable
 fun StatsScreen(
@@ -36,7 +39,7 @@ fun StatsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(MakMintSoft)
+            .background(MakSurface)
     ) {
         MakItTopBar(title = "Stats", showLogo = true)
         Column(
@@ -64,7 +67,8 @@ fun StatsScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = MakMint
+                color = MakMintSoft,
+                border = BorderStroke(1.dp, MakCardBorder)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
@@ -100,7 +104,7 @@ private fun StatOverviewCard(title: String, value: String, subtitle: String) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         color = MakMintSoft,
-        shadowElevation = 2.dp
+        border = BorderStroke(1.dp, MakCardBorder)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(text = title, style = MaterialTheme.typography.bodyMedium, color = MakOnSurfaceMuted)

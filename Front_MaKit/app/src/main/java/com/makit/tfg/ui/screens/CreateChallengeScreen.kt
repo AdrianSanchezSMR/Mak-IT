@@ -1,5 +1,6 @@
 package com.makit.tfg.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -33,6 +34,8 @@ import com.makit.tfg.ui.theme.MakCardBorder
 import com.makit.tfg.ui.theme.MakGreen
 import com.makit.tfg.ui.theme.MakGreenDark
 import com.makit.tfg.ui.theme.MakMintSoft
+import com.makit.tfg.ui.theme.MakOnSurfaceMuted
+import com.makit.tfg.ui.theme.MakSurface
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -52,10 +55,11 @@ fun CreateChallengeScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(MakSurface)
             .imePadding()
     ) {
         MakItTopBar(
-            title = "Nuevo reto",
+            title = "Crear reto",
             showBack = true,
             showLogo = true,
             onBack = onBack
@@ -67,56 +71,41 @@ fun CreateChallengeScreen(
                 .padding(horizontal = 20.dp)
         ) {
             Text(
-                text = "El reto se anadira al catalogo y podra aparecer en el sorteo diario.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MakGreenDark
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Nombre del reto",
+                text = "CREAR RETO",
                 style = MaterialTheme.typography.labelLarge,
-                color = MakGreenDark,
-                fontWeight = FontWeight.SemiBold
+                color = MakGreen,
+                fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(26.dp))
+            FieldLabel("NOMBRE DEL RETO")
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Ej: Medita 10 minutos") },
+                placeholder = { Text("Ej: Meditacion profunda") },
                 singleLine = true,
+                textStyle = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 colors = fieldColors()
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = "Descripcion (opcional)",
-                style = MaterialTheme.typography.labelLarge,
-                color = MakGreenDark,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            FieldLabel("DESCRIPCION")
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp),
-                placeholder = { Text("Cuentanos en que consiste...") },
+                    .height(126.dp),
+                placeholder = { Text("Define el proposito de este reto...") },
                 colors = fieldColors()
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
-            Text(
-                text = "Categoria",
-                style = MaterialTheme.typography.labelLarge,
-                color = MakGreenDark,
-                fontWeight = FontWeight.SemiBold
-            )
+            FieldLabel("CATEGORIA")
             Spacer(modifier = Modifier.height(12.dp))
             FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 categories.forEach { cat ->
                     CategoryChip(
@@ -139,11 +128,26 @@ fun CreateChallengeScreen(
 }
 
 @Composable
+private fun FieldLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelLarge,
+        color = MakOnSurfaceMuted,
+        fontWeight = FontWeight.Bold
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+}
+
+@Composable
 private fun fieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = MakGreen,
     unfocusedBorderColor = MakCardBorder,
     focusedLabelColor = MakGreen,
     cursorColor = MakGreen,
     focusedContainerColor = MakMintSoft,
-    unfocusedContainerColor = MakMintSoft
+    unfocusedContainerColor = MakMintSoft,
+    focusedTextColor = MakGreenDark,
+    unfocusedTextColor = MakGreenDark,
+    focusedPlaceholderColor = MakOnSurfaceMuted,
+    unfocusedPlaceholderColor = MakOnSurfaceMuted
 )

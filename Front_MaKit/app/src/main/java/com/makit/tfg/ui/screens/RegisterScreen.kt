@@ -1,5 +1,6 @@
 package com.makit.tfg.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +33,7 @@ import com.makit.tfg.ui.theme.MakCardBorder
 import com.makit.tfg.ui.theme.MakGreen
 import com.makit.tfg.ui.theme.MakGreenDark
 import com.makit.tfg.ui.theme.MakMintSoft
+import com.makit.tfg.ui.theme.MakSurface
 
 @Composable
 fun RegisterScreen(
@@ -44,7 +46,11 @@ fun RegisterScreen(
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MakSurface)
+    ) {
         MakItTopBar(title = "Crear cuenta", showBack = true, onBack = onBack)
         Column(
             modifier = Modifier
@@ -105,5 +111,7 @@ private fun fieldColors() = OutlinedTextFieldDefaults.colors(
     focusedLabelColor = MakGreen,
     cursorColor = MakGreen,
     focusedContainerColor = MakMintSoft,
-    unfocusedContainerColor = MakMintSoft
+    unfocusedContainerColor = MakMintSoft,
+    focusedTextColor = MakGreenDark,
+    unfocusedTextColor = MakGreenDark
 )

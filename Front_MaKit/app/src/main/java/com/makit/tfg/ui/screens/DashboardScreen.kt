@@ -1,9 +1,11 @@
 package com.makit.tfg.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,11 +13,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -35,13 +42,16 @@ import com.makit.tfg.data.Challenge
 import com.makit.tfg.data.UserProfile
 import com.makit.tfg.ui.components.MakItTopBar
 import com.makit.tfg.ui.components.PrimaryButton
-import com.makit.tfg.ui.components.StreakBadge
+import com.makit.tfg.ui.theme.MakAccentOrange
+import com.makit.tfg.ui.theme.MakCardBorder
 import com.makit.tfg.ui.theme.MakGreen
 import com.makit.tfg.ui.theme.MakGreenDark
 import com.makit.tfg.ui.theme.MakGreenLight
 import com.makit.tfg.ui.theme.MakMint
 import com.makit.tfg.ui.theme.MakMintSoft
 import com.makit.tfg.ui.theme.MakOnSurfaceMuted
+import com.makit.tfg.ui.theme.MakSurface
+import com.makit.tfg.ui.theme.MakStreak
 
 @Composable
 fun DashboardScreen(
@@ -64,7 +74,7 @@ fun DashboardScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(MakMintSoft)
+            .background(MakSurface)
     ) {
         MakItTopBar(showLogo = true)
         Column(
@@ -74,34 +84,44 @@ fun DashboardScreen(
                 .padding(horizontal = 20.dp)
         ) {
             Text(
-                text = "Hola de nuevo,",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MakOnSurfaceMuted
+                text = "PANEL DE CONTROL",
+                style = MaterialTheme.typography.labelLarge,
+                color = MakOnSurfaceMuted,
+                fontWeight = FontWeight.Bold
             )
             Text(
-                text = user.name,
-                style = MaterialTheme.typography.headlineMedium,
+                text = "Hola de nuevo, ${user.name}",
+                style = MaterialTheme.typography.headlineSmall,
                 color = MakGreenDark,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            StreakBadge(days = user.streakDays)
+            Spacer(modifier = Modifier.height(18.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                repeat(7) { index ->
+                    Box(
+                        modifier = Modifier
+                            .size(9.dp)
+                            .clip(CircleShape)
+                            .background(if (index < user.streakDays.coerceAtMost(7)) MakGreen else MakCardBorder)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(28.dp))
 
-            Text(
-                text = "Retos pendientes",
-                style = MaterialTheme.typography.titleMedium,
-                color = MakGreenDark,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
             if (!hasChallenges && !isLoading) {
-                Text(
-                    text = "No tienes retos pendientes. Los que ya completaste estan en Perfil.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MakOnSurfaceMuted
-                )
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(22.dp),
+                    color = MakMintSoft,
+                    border = BorderStroke(1.dp, MakCardBorder)
+                ) {
+                    Text(
+                        text = "No tienes retos pendientes. Los que ya completaste estan en Perfil.",
+                        modifier = Modifier.padding(24.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MakOnSurfaceMuted
+                    )
+                }
             }
 
             todayChallenges.forEach { challenge ->
@@ -114,10 +134,9 @@ fun DashboardScreen(
                         }
                     }
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
             PrimaryButton(
                 text = when {
                     isLoading -> "Cargando..."
@@ -134,8 +153,24 @@ fun DashboardScreen(
             ) {
                 Text(
                     text = "Ver todos mis retos",
-                    color = MakGreenLight,
+                    color = MakGreen,
                     style = MaterialTheme.typography.labelLarge
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                StatTile(
+                    value = user.streakDays.toString(),
+                    label = "Dias enfocados",
+                    iconTint = MakStreak,
+                    modifier = Modifier.weight(1f)
+                )
+                StatTile(
+                    value = user.completedCount.toString(),
+                    label = "Retos logrados",
+                    iconTint = MakGreen,
+                    modifier = Modifier.weight(1f)
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -156,93 +191,99 @@ private fun TodayChallengeCard(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val borderColor = when {
-        challenge.isCompletedToday -> MakGreen.copy(alpha = 0.35f)
-        isSelected -> MakGreen
-        else -> MakMint
-    }
+    val date = formatAssignedDate(challenge.assignedDate)
     val statusText = when {
         challenge.isCompletedToday -> "Completado"
-        isSelected -> "Seleccionado"
-        else -> {
-            val date = formatAssignedDate(challenge.assignedDate)
-            if (date != null) "Pendiente - $date" else "Pendiente"
-        }
+        date != null -> "Pendiente - $date"
+        else -> "Pendiente"
     }
+    val borderColor = if (isSelected) MakGreen else MakCardBorder
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .border(2.dp, borderColor, RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(24.dp))
+            .border(1.dp, borderColor, RoundedCornerShape(24.dp))
             .clickable(enabled = !challenge.isCompletedToday, onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         color = MakMintSoft,
-        shadowElevation = if (isSelected) 5.dp else 2.dp,
-        tonalElevation = 1.dp
+        shadowElevation = if (isSelected) 8.dp else 2.dp
     ) {
-        Column(
-            modifier = Modifier
-                .padding(20.dp)
-                .clip(RoundedCornerShape(20.dp))
-        ) {
+        Column(modifier = Modifier.padding(26.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MakMint
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = MakGreen, modifier = Modifier.size(20.dp))
                     Text(
-                        text = challenge.categoryName,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MakGreenDark
+                        text = challenge.categoryName.uppercase(),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MakGreenDark,
+                        fontWeight = FontWeight.Bold
                     )
                 }
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (isSelected) MakGreen.copy(alpha = 0.16f) else MakGreen.copy(alpha = 0.10f)
-                ) {
+                Surface(shape = RoundedCornerShape(10.dp), color = MakMint) {
                     Text(
                         text = statusText,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        style = MaterialTheme.typography.labelSmall,
                         color = MakGreen
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = challenge.title,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.displaySmall,
                 color = MakGreenDark,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.ExtraBold
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(14.dp))
             Text(
-                text = challenge.description,
-                style = MaterialTheme.typography.bodyMedium,
+                text = challenge.description.ifBlank { "Completa este reto para seguir avanzando en tu rutina." },
+                style = MaterialTheme.typography.bodyLarge,
                 color = MakOnSurfaceMuted
             )
             if (challenge.isCompletedToday) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        tint = MakGreen,
-                        modifier = Modifier.height(18.dp)
-                    )
-                    Spacer(modifier = Modifier.padding(4.dp))
-                    Text(
-                        text = "Completado hoy",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MakGreen
-                    )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MakGreen, modifier = Modifier.size(20.dp))
+                    Text("Completado", style = MaterialTheme.typography.labelLarge, color = MakGreen)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun StatTile(
+    value: String,
+    label: String,
+    iconTint: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.height(142.dp),
+        shape = RoundedCornerShape(18.dp),
+        color = MakMintSoft,
+        border = BorderStroke(1.dp, MakCardBorder)
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = if (iconTint == MakStreak) Icons.Default.LocalFireDepartment else Icons.Default.Spa,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(28.dp)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(value, style = MaterialTheme.typography.headlineMedium, color = MakGreenDark, fontWeight = FontWeight.Bold)
+            Text(label, style = MaterialTheme.typography.bodySmall, color = MakOnSurfaceMuted)
         }
     }
 }
