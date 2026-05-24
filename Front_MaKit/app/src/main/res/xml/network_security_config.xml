@@ -4,5 +4,6 @@
         <domain includeSubdomains="true">10.0.2.2</domain>
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">mak-it-backend-env.eba-2m3irqqv.us-east-1.elasticbeanstalk.com</domain>
     </domain-config>
 </network-security-config>

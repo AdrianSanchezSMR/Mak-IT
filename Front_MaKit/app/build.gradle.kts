@@ -16,7 +16,7 @@ val localProperties = Properties().apply {
 
 val apiBaseUrl = providers.gradleProperty("MAKIT_API_BASE_URL")
     .orElse(providers.environmentVariable("MAKIT_API_BASE_URL"))
-    .orElse(localProperties.getProperty("MAKIT_API_BASE_URL") ?: "http://10.0.2.2:8080/")
+    .orElse(localProperties.getProperty("MAKIT_API_BASE_URL") ?: "http://mak-it-backend-env.eba-2m3irqqv.us-east-1.elasticbeanstalk.com/")
 
 android {
     namespace = "com.makit.tfg"
@@ -28,7 +28,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-        // Emulador Android -> localhost del PC. En despliegue define MAKIT_API_BASE_URL.
+        // Por defecto apunta al backend desplegado en Elastic Beanstalk; puedes sobrescribirlo con MAKIT_API_BASE_URL.
         buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
     }
 
