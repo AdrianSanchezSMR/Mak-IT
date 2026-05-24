@@ -77,7 +77,7 @@ public class ChallengeService {
         return new InterestsResponse(idsOrdenados);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ChallengeResponse getTodayChallenge(String username) {
         Usuario usuario = getUsuarioByUsername(username);
         LocalDate hoy = LocalDate.now();
@@ -113,16 +113,22 @@ public class ChallengeService {
         return toChallengeResponse(retoSeleccionado, false, hoy);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<ChallengeResponse> getTodayChallenges(String username) {
         Usuario usuario = getUsuarioByUsername(username);
-        LocalDate hoy = LocalDate.now();
 
-        return progresoDiarioRepository.findByUsuarioAndFechaOrderByIdAsc(usuario, hoy)
+        List<ChallengeResponse> pendientes = progresoDiarioRepository
+                .findByUsuarioAndCompletadoFalseOrderByFechaAscIdAsc(usuario)
                 .stream()
-                .filter(progreso -> !Boolean.TRUE.equals(progreso.getCompletado()))
                 .map(progreso -> toChallengeResponse(progreso))
                 .toList();
+
+        if (!pendientes.isEmpty()) {
+            return pendientes;
+        }
+
+        ChallengeResponse retoDelDia = getTodayChallenge(username);
+        return retoDelDia.isCompletadoHoy() ? List.of() : List.of(retoDelDia);
     }
 
     @Transactional(readOnly = true)
@@ -141,9 +147,13 @@ public class ChallengeService {
 
         ProgresoDiario progreso = progresoDiarioRepository
                 .findByUsuarioAndRetoCatalogoIdAndFecha(usuario, challengeId, hoy)
+                .or(() -> progresoDiarioRepository
+                        .findPendingByUsuarioAndRetoCatalogoIdOrderByFechaAscIdAsc(usuario, challengeId)
+                        .stream()
+                        .findFirst())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Ese reto no corresponde al reto del dia de hoy"
+                        "Ese reto no esta pendiente para este usuario"
                 ));
 
         progreso.setCompletado(true);

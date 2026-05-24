@@ -110,9 +110,8 @@ fun MakItNavHost(
                             BottomNavItem.Perfil -> Routes.PROFILE
                         }
                         navController.navigate(route) {
-                            popUpTo(Routes.HOME) { saveState = true }
+                            popUpTo(Routes.HOME) { inclusive = false }
                             launchSingleTop = true
-                            restoreState = true
                         }
                     },
                     onFabClick = { navController.navigate(Routes.CREATE_CHALLENGE) }
@@ -165,7 +164,11 @@ fun MakItNavHost(
                             }
                         }
                     },
-                    onViewAllChallenges = { navController.navigate(Routes.PROFILE) }
+                    onViewAllChallenges = {
+                        navController.navigate(Routes.PROFILE) {
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
             composable(Routes.STATS) {

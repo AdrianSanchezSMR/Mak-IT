@@ -89,7 +89,7 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             Text(
-                text = "Reto de hoy",
+                text = "Retos pendientes",
                 style = MaterialTheme.typography.titleMedium,
                 color = MakGreenDark,
                 fontWeight = FontWeight.SemiBold
@@ -98,7 +98,7 @@ fun DashboardScreen(
 
             if (!hasChallenges && !isLoading) {
                 Text(
-                    text = "No tienes retos pendientes hoy. Los que ya completaste estan en Perfil.",
+                    text = "No tienes retos pendientes. Los que ya completaste estan en Perfil.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MakOnSurfaceMuted
                 )
@@ -143,6 +143,13 @@ fun DashboardScreen(
     }
 }
 
+private fun formatAssignedDate(raw: String?): String? {
+    if (raw.isNullOrBlank() || raw.length < 10) return null
+    val parts = raw.substring(0, 10).split("-")
+    if (parts.size != 3) return null
+    return "${parts[2]}/${parts[1]}/${parts[0]}"
+}
+
 @Composable
 private fun TodayChallengeCard(
     challenge: Challenge,
@@ -155,9 +162,12 @@ private fun TodayChallengeCard(
         else -> MakMint
     }
     val statusText = when {
-        challenge.isCompletedToday -> "Completado hoy"
+        challenge.isCompletedToday -> "Completado"
         isSelected -> "Seleccionado"
-        else -> "Pendiente"
+        else -> {
+            val date = formatAssignedDate(challenge.assignedDate)
+            if (date != null) "Pendiente - $date" else "Pendiente"
+        }
     }
     Surface(
         modifier = Modifier
