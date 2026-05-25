@@ -4,24 +4,32 @@
 
 # Mak-IT
 
-Mak-IT es una aplicación de hábitos y retos diarios pensada para ayudar al usuario a mantener constancia mediante retos cortos, seguimiento del progreso y una experiencia visual sencilla tanto en móvil como en backend.
+Mak-IT es una aplicacion de habitos y retos diarios pensada para ayudar al usuario a mantener constancia mediante retos cortos, seguimiento del progreso y una experiencia visual sencilla tanto en movil como en backend.
 
-El proyecto está dividido en dos partes:
+El proyecto esta dividido en dos partes:
 - `app/`: backend en Spring Boot.
 - `Front_MaKit/`: app Android en Jetpack Compose.
 
-## Qué hace la aplicación
+## Web de descarga
+
+La APK del proyecto tambien se puede descargar desde la web oficial:
+
+https://sram505.github.io/Makit_web/
+
+En esa pagina encontraras una presentacion visual de Mak-IT y un boton para descargar la APK publicada en la web. El archivo se baja directamente desde la propia pagina, sin pasos extra.
+
+## Que hace la aplicacion
 
 La app permite:
-- registrarse e iniciar sesión
-- seleccionar categorías preferidas
-- recibir retos diarios aleatorios según esas categorías
+- registrarse e iniciar sesion
+- seleccionar categorias preferidas
+- recibir retos diarios aleatorios segun esas categorias
 - marcar retos como completados
-- consultar estadísticas y racha
-- crear nuevos retos de catálogo
+- consultar estadisticas y racha
+- crear nuevos retos de catalogo
 - gestionar perfil e intereses
 
-El sistema está pensado para que cada usuario tenga una experiencia personalizada. Los retos se asignan en función de las categorías que tenga activas y se guardan en un historial diario.
+El sistema esta pensado para que cada usuario tenga una experiencia personalizada. Los retos se asignan en funcion de las categorias que tenga activas y se guardan en un historial diario.
 
 ## Arquitectura general
 
@@ -30,26 +38,26 @@ La arquitectura es de tipo cliente-servidor:
 - La app Android consume la API REST del backend.
 - El backend Spring Boot expone los endpoints.
 - La base de datos es MySQL alojada en Amazon RDS.
-- El backend desplegado está en AWS Elastic Beanstalk.
+- El backend desplegado esta en AWS Elastic Beanstalk.
 
 Flujo general:
 
-1. El usuario inicia sesión en la app Android.
+1. El usuario inicia sesion en la app Android.
 2. El front obtiene un token JWT.
 3. Las peticiones posteriores llevan ese token en la cabecera `Authorization`.
 4. El backend valida el token y accede a la base de datos.
-5. El usuario recibe retos, historial y estadísticas.
+5. El usuario recibe retos, historial y estadisticas.
 
 ## Frontend Android
 
-El frontend está hecho con:
+El frontend esta hecho con:
 - Kotlin
 - Jetpack Compose
 - Retrofit
 - OkHttp
 - Coil
 
-### Conexión del front al backend
+### Conexion del front al backend
 
 La app apunta por defecto al backend desplegado en AWS:
 
@@ -64,7 +72,7 @@ Si se quiere sobrescribir para desarrollo o pruebas, se puede usar:
 
 ## Backend Spring Boot
 
-El backend está hecho con:
+El backend esta hecho con:
 - Spring Boot
 - Spring Security
 - Spring Data JPA
@@ -72,15 +80,15 @@ El backend está hecho con:
 - JWT
 - Hibernate
 
-### Conexión a la base de datos
+### Conexion a la base de datos
 
 El backend usa MySQL en Amazon RDS.
 
-La configuración se encuentra en:
-- [`app/src/main/resources/application.properties`](app/src/main/resources/application.properties)
+La configuracion se encuentra en:
+- [`app/src/main/resources/application.properties`](./app/src/main/resources/application.properties)
 
 Ahí se define:
-- URL de conexión JDBC
+- URL de conexion JDBC
 - usuario de la base de datos
 - contraseña
 - dialecto de Hibernate
@@ -97,45 +105,45 @@ La plataforma utilizada es:
 - Corretto 17
 - Amazon Linux 2023
 
-El artefacto de despliegue es el `.jar` generado con Maven, empaquetado después en `.zip` para Elastic Beanstalk.
+El artefacto de despliegue es el `.jar` generado con Maven, empaquetado despues en `.zip` para Elastic Beanstalk.
 
-## Autenticación
+## Autenticacion
 
 Mak-IT usa JWT.
 
 Funcionamiento:
-- el usuario inicia sesión con nombre de usuario y contraseña
+- el usuario inicia sesion con nombre de usuario y contrasena
 - el backend devuelve un token JWT
 - la app lo guarda localmente
-- las peticiones protegidas envían `Authorization: Bearer <token>`
+- las peticiones protegidas envian `Authorization: Bearer <token>`
 
-## Lógica de retos
+## Logica de retos
 
 Los retos diarios se guardan en la tabla de progreso diario. La app trabaja con tres conceptos:
-- reto del día
+- reto del dia
 - retos pendientes
 - retos completados
 
-Además:
-- los retos aleatorios se generan entre las categorías preferidas del usuario
-- un reto puede volver a salir en otro día
+Ademas:
+- los retos aleatorios se generan entre las categorias preferidas del usuario
+- un reto puede volver a salir en otro dia
 - la racha diaria se calcula a partir del historial de progreso
-- el sistema evita enseñar errores técnicos al usuario final y prioriza mensajes de interfaz
+- el sistema evita ensenar errores tecnicos al usuario final y prioriza mensajes de interfaz
 
 ## Endpoints del backend
 
 ### Salud
 
 #### `GET /api/health`
-Comprueba que el backend está arrancado.
+Comprueba que el backend esta arrancado.
 
 Respuesta esperada:
 - estado del servidor
-- mensaje de confirmación
+- mensaje de confirmacion
 
 ---
 
-### Autenticación
+### Autenticacion
 
 #### `POST /api/auth/register`
 Registra un usuario nuevo.
@@ -147,7 +155,7 @@ Campos principales:
 - `horaAviso` opcional
 
 #### `POST /api/auth/login`
-Inicia sesión y devuelve un JWT.
+Inicia sesion y devuelve un JWT.
 
 #### `GET /api/auth/me`
 Devuelve la identidad del usuario autenticado.
@@ -166,35 +174,35 @@ Actualiza datos de perfil:
 - hora de aviso
 
 #### `PUT /api/users/me/password`
-Cambia la contraseña del usuario.
+Cambia la contrasena del usuario.
 
 ---
 
-### Categorías e intereses
+### Categorias e intereses
 
 #### `GET /api/categorias`
-Lista todas las categorías existentes.
+Lista todas las categorias existentes.
 
 #### `GET /api/users/me/interests`
-Devuelve las categorías preferidas activas del usuario.
+Devuelve las categorias preferidas activas del usuario.
 
 #### `PUT /api/users/me/interests`
-Guarda las categorías preferidas activas del usuario.
+Guarda las categorias preferidas activas del usuario.
 
 ---
 
 ### Retos
 
 #### `GET /api/retos`
-Lista los retos activos del catálogo.
+Lista los retos activos del catalogo.
 
 #### `POST /api/retos`
-Crea un nuevo reto de catálogo.
+Crea un nuevo reto de catalogo.
 
 #### `GET /api/retos/aleatorio`
-Devuelve un reto aleatorio del catálogo.
+Devuelve un reto aleatorio del catalogo.
 
-Parámetro opcional:
+Parametro opcional:
 - `categoriaId`
 
 #### `POST /api/challenges/random`
@@ -203,7 +211,7 @@ Asigna un reto aleatorio de hoy al usuario autenticado.
 Se usa desde la pantalla principal cuando el usuario pide un nuevo reto aleatorio.
 
 #### `GET /api/challenges/today`
-Devuelve el reto del día del usuario.
+Devuelve el reto del dia del usuario.
 
 #### `GET /api/challenges/today/all`
 Devuelve todos los retos pendientes o activos de hoy.
@@ -226,13 +234,13 @@ Devuelve el resumen de progreso del usuario:
 - tasa de completado
 - serie diaria
 
-## Scheduler automático
+## Scheduler automatico
 
-El backend incluye un proceso programado que revisa periódicamente a los usuarios con `horaAviso` configurada y genera el reto diario cuando llega la hora correspondiente.
+El backend incluye un proceso programado que revisa periodicamente a los usuarios con `horaAviso` configurada y genera el reto diario cuando llega la hora correspondiente.
 
-Esto permite que el reto aparezca de forma automática sin depender de abrir manualmente la app.
+Esto permite que el reto aparezca de forma automatica sin depender de abrir manualmente la app.
 
-## Cómo ejecutar el proyecto en local
+## Como ejecutar el proyecto en local
 
 ### Backend
 
@@ -253,7 +261,7 @@ Esto permite que el reto aparezca de forma automática sin depender de abrir man
 2. Asegurarse de que `MAKIT_API_BASE_URL` apunte al backend deseado.
 3. Ejecutar la app en emulador o dispositivo.
 
-## Build de producción del backend
+## Build de produccion del backend
 
 Para generar el `.jar`:
 
@@ -269,17 +277,17 @@ El artefacto final queda en:
 
 ### Elastic Beanstalk
 
-El backend se despliega como aplicación Java SE:
+El backend se despliega como aplicacion Java SE:
 - plataforma `Java`
-- ramificación `Corretto 17 running on 64bit Amazon Linux 2023`
-- bundle `.zip` con el `.jar` en la raíz
+- rama `Corretto 17 running on 64bit Amazon Linux 2023`
+- bundle `.zip` con el `.jar` en la raiz
 
 ### Amazon RDS
 
 La base de datos MySQL se conecta mediante el endpoint RDS configurado en el backend.
 
 Importante:
-- RDS debe permitir tráfico desde el security group de Elastic Beanstalk
+- RDS debe permitir trafico desde el security group de Elastic Beanstalk
 - el puerto de MySQL es `3306`
 
 ## Estructura de carpetas
@@ -291,18 +299,18 @@ Importante:
 - `makit_logo.png`
   - logo principal del proyecto
 
-## Notas técnicas
+## Notas tecnicas
 
 - El front usa `Retrofit` + `OkHttp` para consumir la API.
 - El backend usa `Spring Security` con JWT.
 - El progreso y la racha se calculan a partir del historial de retos.
 - Los retos diarios se guardan en la tabla de progreso, permitiendo historial por fecha.
-- La app visualiza categorías y retos con iconos y colores consistentes.
+- La app visualiza categorias y retos con iconos y colores consistentes.
 
 ## Estado actual
 
-El proyecto está preparado para:
+El proyecto esta preparado para:
 - app Android apuntando al backend de AWS
 - backend desplegado en Elastic Beanstalk
 - persistencia en RDS
-- login, retos diarios, intereses, historial y estadísticas
+- login, retos diarios, intereses, historial y estadisticas
