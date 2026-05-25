@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./makit_logo.png" alt="Mak-IT Logo" width="160" />
+</p>
+
 # Mak-IT
 
 Mak-IT es una aplicación de hábitos y retos diarios pensada para ayudar al usuario a mantener constancia mediante retos cortos, seguimiento del progreso y una experiencia visual sencilla tanto en móvil como en backend.
@@ -302,4 +306,3 @@ El proyecto está preparado para:
 - backend desplegado en Elastic Beanstalk
 - persistencia en RDS
 - login, retos diarios, intereses, historial y estadísticas
-
