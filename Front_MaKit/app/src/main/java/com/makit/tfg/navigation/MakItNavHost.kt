@@ -4,6 +4,7 @@ import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -135,8 +136,9 @@ fun MakItNavHost(
         bottomBar = {
             if (showBottomBar) {
                 MakItBottomBar(
+                    modifier = Modifier.navigationBarsPadding(),
                     selected = selectedTab,
-                    onItemSelected = { item ->
+                    onItemSelected = { item -> 
                         val route = when (item) {
                             BottomNavItem.Inicio -> Routes.HOME
                             BottomNavItem.Stats -> Routes.STATS
